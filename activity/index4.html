@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nitrogen Orchard Adventure</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        
+        /* Make game responsive */
+body {
+    font-family: 'Courier Prime', monospace;
+    background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    border: 4px solid #8B4513;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    background: #228B22;
+    overflow: hidden;
+}
+
+#game-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #90EE90;
+    border-radius: 4px;
+}
+
+/* Responsive scaling */
+@media screen and (max-width: 800px) {
+    #game-container {
+        transform: scale(calc(100vw / 800));
+        transform-origin: center center;
+    }
+}
+
+@media screen and (max-height: 600px) {
+    #game-container {
+        transform: scale(calc(100vh / 600));
+        transform-origin: center center;
+    }
+}
+
+@media screen and (max-width: 800px) and (max-height: 600px) {
+    #game-container {
+        transform: scale(min(calc(100vw / 800), calc(100vh / 600)));
+        transform-origin: center center;
+    }
+}
+#mute-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 20;
+    border: 2px solid #4caf50;
+    font-size: 1.5rem;
+    transition: background-color 0.3s;
+}
+
+#mute-button:hover {
+    background-color: rgba(76, 175, 80, 0.3);
+}
+
+#mute-button.muted {
+    border-color: #f44336;
+}
+/* Responsive modals */
+@media screen and (max-width: 600px) {
+    .modal-content {
+        max-width: 95%;
+        max-height: 85%;
+        padding: 15px;
+        font-size: 14px;
+    }
+    
+    #puzzle-container {
+        width: 90%;
+        padding: 15px;
+    }
+    
+    #puzzle-grid {
+        max-width: 210px;
+    }
+    
+    .fertilizer-cell {
+        width: 60px;
+        height: 60px;
+        font-size: 20px;
+    }
+    
+    #journal .modal-content {
+        font-size: 13px;
+    }
+    
+    #journal h2 {
+        font-size: 20px;
+    }
+    
+    #dialog-box {
+        max-width: 90%;
+        font-size: 14px;
+    }
+}
+
+/* Very small screens */
+@media screen and (max-width: 400px) {
+    #controls-hint {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+    
+    #nitrogen-counter {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+    
+    #journal-toggle {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    .puzzle-buttons button {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
+        #journal-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #8B4513;
+            color: #FFD700;
+            border: 2px solid #DAA520;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-family: 'Courier Prime', monospace;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        #journal-toggle:hover {
+            background: #A0522D;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        #controls-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #FFD700;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            border: 1px solid #DAA520;
+        }
+        
+        #nitrogen-counter {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(135deg, #4169E1, #1E90FF);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 15px rgba(65, 105, 225, 0.5);
+        }
+        
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #2F4F2F, #556B2F);
+            border: 3px solid #DAA520;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+        }
+        
+        #journal .modal-content {
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            color: #FFD700;
+        }
+        
+        #journal h2 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        #journal p {
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        #dialog-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(139, 69, 19, 0.95);
+            color: #FFD700;
+            padding: 20px;
+            border: 3px solid #DAA520;
+            border-radius: 10px;
+            max-width: 400px;
+            text-align: center;
+            display: none;
+            z-index: 500;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+        }
+        
+        #dialog-box button {
+            background: #228B22;
+            color: white;
+            border: 2px solid #32CD32;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-family: 'Courier Prime', monospace;
+            transition: all 0.3s ease;
+        }
+        
+        #dialog-box button:hover {
+            background: #32CD32;
+            box-shadow: 0 0 10px rgba(50, 205, 50, 0.5);
+        }
+        
+        #puzzle-container {
+            background: linear-gradient(135deg, #2F4F2F, #556B2F);
+            color: #FFD700;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            width: 400px;
+        }
+        
+        #puzzle-container h2 {
+            margin-bottom: 15px;
+            color: #90EE90;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        #puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+            max-width: 240px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .fertilizer-cell {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            border: 3px solid #DAA520;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFD700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .fertilizer-cell:hover {
+            background: linear-gradient(135deg, #A0522D, #CD853F);
+            transform: scale(1.1);
+        }
+        
+        .fertilizer-cell.selected {
+            box-shadow: 0 0 15px rgba(50, 205, 50, 0.8);
+            border-color: #32CD32;
+        }
+        
+        .blink-green {
+            animation: blinkGreen 0.6s ease-in-out;
+        }
+        
+        @keyframes blinkGreen {
+            0%, 100% { background: linear-gradient(135deg, #8B4513, #A0522D); }
+            50% { background: linear-gradient(135deg, #32CD32, #90EE90); }
+        }
+        
+        .puzzle-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .puzzle-buttons button {
+            background: linear-gradient(135deg, #4169E1, #1E90FF);
+            color: white;
+            border: 2px solid #FFD700;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Courier Prime', monospace;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .puzzle-buttons button:hover {
+            background: linear-gradient(135deg, #1E90FF, #87CEEB);
+            box-shadow: 0 0 15px rgba(30, 144, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        #level-complete .modal-content {
+            text-align: center;
+            color: #FFD700;
+        }
+        
+        #level-complete h2 {
+            color: #90EE90;
+            margin-bottom: 20px;
+            font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .nitrogen-badge {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4169E1, #1E90FF);
+            border: 4px solid #FFD700;
+            border-radius: 50%;
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            line-height: 72px;
+            margin: 20px 0;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(65, 105, 225, 0.5); }
+            to { box-shadow: 0 0 30px rgba(65, 105, 225, 0.8); }
+        }
+        
+        .tree-healthy {
+            animation: treeGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes treeGlow {
+            from { filter: drop-shadow(0 0 5px rgba(50, 205, 50, 0.5)); }
+            to { filter: drop-shadow(0 0 15px rgba(50, 205, 50, 0.8)); }
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #FFD700;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-button:hover {
+            color: #FFA500;
+        }/* Button styling */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        #back-home-button {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        z-index: 50;
+        }
+        #exit-game-button {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 50;
+}
+    </style>
+</head>
+<body>
+     <div id="back-home-button">
+        <button id="return-to-menu">Back to Journal</button>
+    </div>
+    <button id="exit-game-button">Exit Game</button>
+    <audio id="click-sound" src="sounds/click.mp3" preload="auto"></audio>
+    <audio id="start-sound" src="sounds/start.mp3" preload="auto"></audio>
+    <audio id="bg-music" src="sounds/background.mp3" preload="auto" loop></audio>
+    <audio id="yay-sound" src="sounds/yay.mp3" preload="auto"></audio>
+    <div id="mute-button">🔊</div>
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <button id="journal-toggle">Journal (J)</button>
+        <div id="controls-hint">Arrow keys: Move | Space: Interact | J: Journal</div>
+        <div id="nitrogen-counter">Nitrogen: <span id="nitrogen-value">0</span></div>
+        
+        <div id="journal" class="modal">
+            <div class="modal-content">
+                <button class="close-button" onclick="closeJournal()">&times;</button>
+                <h2>🌱 Alchemist's Journal</h2>
+                <p><strong>Mission:</strong> Restore nitrogen balance to revive the magical orchard trees.</p>
+                <p><strong>Trees need specific nitrogen levels:</strong></p>
+                <p>• Oak requires sum of 15</p>
+                <p>• Maple requires sum of 18</p>
+                <p>• Willow requires sum of 21</p>
+                <p>• Elder requires sum of 24</p>
+                <p><strong>Magic Square Rules:</strong> Each row and column must equal the target sum using digits 1-9 without repetition.</p>
+                <p><strong>Hint:</strong> Start with the center number and work outward!</p>
+            </div>
+        </div>
+        
+        <div id="dialog-box">
+            <p id="dialog-text"></p>
+            <button onclick="closeDialog()">Continue</button>
+        </div>
+        
+        <div id="puzzle-container" class="modal">
+            <div class="modal-content">
+                <button class="close-button" onclick="closePuzzle()">&times;</button>
+                <h2 id="puzzle-title">Nitrogen Balance Puzzle</h2>
+                <p id="puzzle-instructions">Click cells to cycle through values 1-9. Make each row and column sum to the target!</p>
+                <p id="target-sum">Target Sum: 15</p>
+                <div id="puzzle-grid"></div>
+                <div class="puzzle-buttons">
+                    <button onclick="checkSolution()">Check Solution</button>
+                    <button onclick="closePuzzle()">Close Puzzle</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="level-complete-modal" class="modal">
+            <div class="modal-content">
+                <h2>🎉 Level Complete!</h2>
+                <p>You have successfully restored nitrogen balance to the magical orchard!</p>
+                <div class="nitrogen-badge">N</div>
+                <p>You've earned the <strong>Nitrogen Mastery</strong> badge!</p>
+                <p>All trees are now healthy and thriving with proper nutrient levels.</p>
+                <div class="puzzle-buttons">
+                    <button id="continue-btn">Continue Adventure</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game state
+        let player = { x: 400, y: 300, width: 20, height: 20 };
+        let trees = [
+            { x: 150, y: 100, width: 40, height: 60, healthy: false, targetSum: 15, name: "Oak" },
+            { x: 650, y: 150, width: 40, height: 60, healthy: false, targetSum: 18, name: "Maple" },
+            { x: 200, y: 450, width: 40, height: 60, healthy: false, targetSum: 21, name: "Willow" },
+            { x: 600, y: 450, width: 40, height: 60, healthy: false, targetSum: 24, name: "Elder" }
+        ];
+        let decorations = [];
+        let currentPuzzleTree = null;
+        let puzzleGrid = Array(9).fill(1);
+        let nitrogenCount = 0;
+        let gameCompleted = false;
+        
+        // Input handling
+        const keys = {};
+        
+        // Generate decorations
+        function generateDecorations() {
+            decorations = [];
+            for (let i = 0; i < 15; i++) {
+                let x, y;
+                let validPosition = false;
+                let attempts = 0;
+                
+                while (!validPosition && attempts < 50) {
+                    x = Math.random() * (canvas.width - 20);
+                    y = Math.random() * (canvas.height - 20);
+                    
+                    validPosition = true;
+                    // Check if it overlaps with trees or player start
+                    for (let tree of trees) {
+                        if (x < tree.x + tree.width + 30 && x + 20 > tree.x - 30 &&
+                            y < tree.y + tree.height + 30 && y + 20 > tree.y - 30) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                    
+                    if (x < player.x + 50 && x + 20 > player.x - 50 &&
+                        y < player.y + 50 && y + 20 > player.y - 50) {
+                        validPosition = false;
+                    }
+                    
+                    attempts++;
+                }
+                
+                if (validPosition) {
+                    decorations.push({
+                        x: x,
+                        y: y,
+                        type: Math.floor(Math.random() * 3) // 0: grass, 1: rock, 2: flower
+                    });
+                }
+            }
+        }
+        
+        // Background rendering
+        let bgCanvas = document.createElement('canvas');
+        bgCanvas.width = canvas.width;
+        bgCanvas.height = canvas.height;
+        let bgCtx = bgCanvas.getContext('2d');
+        
+        function renderBackground() {
+            // Clear background
+            bgCtx.fillStyle = '#90EE90';
+            bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+            
+            // Draw decorations
+            decorations.forEach(decoration => {
+                switch (decoration.type) {
+                    case 0: // Grass
+                        bgCtx.fillStyle = '#228B22';
+                        bgCtx.fillRect(decoration.x, decoration.y, 8, 12);
+                        bgCtx.fillStyle = '#32CD32';
+                        bgCtx.fillRect(decoration.x + 2, decoration.y, 4, 8);
+                        break;
+                    case 1: // Rock
+                        bgCtx.fillStyle = '#696969';
+                        bgCtx.beginPath();
+                        bgCtx.ellipse(decoration.x + 8, decoration.y + 8, 8, 6, 0, 0, Math.PI * 2);
+                        bgCtx.fill();
+                        break;
+                    case 2: // Flower
+                        bgCtx.fillStyle = '#228B22';
+                        bgCtx.fillRect(decoration.x + 6, decoration.y + 8, 2, 8);
+                        bgCtx.fillStyle = '#FFD700';
+                        bgCtx.beginPath();
+                        bgCtx.ellipse(decoration.x + 7, decoration.y + 7, 5, 5, 0, 0, Math.PI * 2);
+                        bgCtx.fill();
+                        break;
+                }
+            });
+        }
+        
+        function drawTree(tree) {
+            // Tree trunk
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(tree.x + 15, tree.y + 30, 10, 30);
+            
+            // Tree crown
+            if (tree.healthy) {
+                ctx.fillStyle = '#32CD32';
+                ctx.shadowColor = '#90EE90';
+                ctx.shadowBlur = 10;
+            } else {
+                ctx.fillStyle = '#228B22';
+                ctx.shadowBlur = 0;
+            }
+            
+            ctx.beginPath();
+            ctx.ellipse(tree.x + 20, tree.y + 20, 20, 25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Tree name
+            ctx.fillStyle = '#8B4513';
+            ctx.font = '12px Courier Prime';
+            ctx.textAlign = 'center';
+            ctx.fillText(tree.name, tree.x + 20, tree.y + 75);
+        }
+        
+        function drawPlayer() {
+            // Player body
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(player.x + 6, player.y + 8, 8, 12);
+            
+            // Player head
+            ctx.fillStyle = '#FFE4B5';
+            ctx.beginPath();
+            ctx.ellipse(player.x + 10, player.y + 6, 4, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Player eyes
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(player.x + 8, player.y + 4, 1, 1);
+            ctx.fillRect(player.x + 11, player.y + 4, 1, 1);
+            
+            // Player arms
+            ctx.fillStyle = '#FFE4B5';
+            ctx.fillRect(player.x + 4, player.y + 10, 3, 2);
+            ctx.fillRect(player.x + 13, player.y + 10, 3, 2);
+            
+            // Player legs
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(player.x + 7, player.y + 16, 2, 4);
+            ctx.fillRect(player.x + 11, player.y + 16, 2, 4);
+        }
+        
+        function render() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            ctx.drawImage(bgCanvas, 0, 0);
+            
+            // Draw trees
+            trees.forEach(drawTree);
+            
+            // Draw player
+            drawPlayer();
+        }
+        
+        function movePlayer() {
+            if (gameCompleted) return; // Don't allow movement when game is completed
+            
+            let newX = player.x;
+            let newY = player.y;
+            
+            if (keys['ArrowLeft']) newX -= 3;
+            if (keys['ArrowRight']) newX += 3;
+            if (keys['ArrowUp']) newY -= 3;
+            if (keys['ArrowDown']) newY += 3;
+            
+            // Boundary checking
+            if (newX >= 0 && newX <= canvas.width - player.width) {
+                player.x = newX;
+            }
+            if (newY >= 0 && newY <= canvas.height - player.height) {
+                player.y = newY;
+            }
+            
+            // Tree collision
+            for (let tree of trees) {
+                if (player.x < tree.x + tree.width && 
+                    player.x + player.width > tree.x &&
+                    player.y < tree.y + tree.height && 
+                    player.y + player.height > tree.y) {
+                    player.x = newX === player.x ? player.x : (player.x > tree.x ? tree.x + tree.width : tree.x - player.width);
+                    player.y = newY === player.y ? player.y : (player.y > tree.y ? tree.y + tree.height : tree.y - player.height);
+                }
+            }
+        }
+        
+        function checkTreeInteraction() {
+            if (gameCompleted) return; // Don't allow interactions when game is completed
+            
+            for (let tree of trees) {
+                let distance = Math.sqrt(
+                    Math.pow(player.x + player.width/2 - (tree.x + tree.width/2), 2) +
+                    Math.pow(player.y + player.height/2 - (tree.y + tree.height/2), 2)
+                );
+                
+                if (distance < 50) {
+                    interactWithTree(tree);
+                    break;
+                }
+            }
+        }
+        
+        function interactWithTree(tree) {
+            if (tree.healthy) {
+                showDialog(`The ${tree.name} tree is already healthy and thriving!`);
+                return;
+            }
+            
+            showDialog(`The ${tree.name} tree looks weak and needs nitrogen balance restoration. Target sum: ${tree.targetSum}`, () => {
+                openPuzzle(tree);
+            });
+        }
+        
+        function showDialog(text, callback) {
+            document.getElementById('dialog-text').textContent = text;
+            document.getElementById('dialog-box').style.display = 'block';
+            
+            // Store callback for when dialog is closed
+            window.currentDialogCallback = callback;
+        }
+        
+        function closeDialog() {
+            document.getElementById('dialog-box').style.display = 'none';
+            if (window.currentDialogCallback) {
+                window.currentDialogCallback();
+                window.currentDialogCallback = null;
+            }
+        }
+        
+        function openPuzzle(tree) {
+            currentPuzzleTree = tree;
+            document.getElementById('puzzle-title').textContent = `${tree.name} Tree - Nitrogen Balance`;
+            document.getElementById('target-sum').textContent = `Target Sum: ${tree.targetSum}`;
+            
+            // Reset puzzle grid
+            puzzleGrid = Array(9).fill(1);
+            createPuzzleGrid();
+            
+            document.getElementById('puzzle-container').style.display = 'flex';
+        }
+        
+        function createPuzzleGrid() {
+            const grid = document.getElementById('puzzle-grid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'fertilizer-cell';
+                cell.textContent = puzzleGrid[i];
+                cell.addEventListener('click', () => cycleCellValue(i));
+                grid.appendChild(cell);
+            }
+        }
+        
+        function cycleCellValue(index) {
+            puzzleGrid[index] = puzzleGrid[index] === 9 ? 1 : puzzleGrid[index] + 1;
+            createPuzzleGrid();
+        }
+        
+        function checkSolution() {
+            if (!currentPuzzleTree) {
+                console.error('No puzzle tree selected');
+                return;
+            }
+            
+            const target = currentPuzzleTree.targetSum;
+            const grid = puzzleGrid;
+            
+            // Check rows
+            const rows = [
+                [grid[0], grid[1], grid[2]],
+                [grid[3], grid[4], grid[5]],
+                [grid[6], grid[7], grid[8]]
+            ];
+            
+            // Check columns
+            const cols = [
+                [grid[0], grid[3], grid[6]],
+                [grid[1], grid[4], grid[7]],
+                [grid[2], grid[5], grid[8]]
+            ];
+            
+            let correctRows = 0;
+            let correctCols = 0;
+            
+            // Check row sums
+            rows.forEach((row, index) => {
+                const sum = row.reduce((a, b) => a + b, 0);
+                if (sum === target) {
+                    correctRows++;
+                    // Highlight correct row
+                    for (let i = 0; i < 3; i++) {
+                        const cellIndex = index * 3 + i;
+                        const cell = document.querySelectorAll('.fertilizer-cell')[cellIndex];
+                        if (cell) {
+                            cell.classList.add('blink-green');
+                            setTimeout(() => cell.classList.remove('blink-green'), 600);
+                        }
+                    }
+                }
+            });
+            
+            // Check column sums
+            cols.forEach((col, index) => {
+                const sum = col.reduce((a, b) => a + b, 0);
+                if (sum === target) {
+                    correctCols++;
+                    // Highlight correct column
+                    for (let i = 0; i < 3; i++) {
+                        const cellIndex = i * 3 + index;
+                        const cell = document.querySelectorAll('.fertilizer-cell')[cellIndex];
+                        if (cell) {
+                            cell.classList.add('blink-green');
+                            setTimeout(() => cell.classList.remove('blink-green'), 600);
+                        }
+                    }
+                }
+            });
+            
+            if (correctRows === 3 && correctCols === 3) {
+                // Success!
+                setTimeout(() => {
+                    if (currentPuzzleTree && currentPuzzleTree.name) {
+                        currentPuzzleTree.healthy = true;
+                        nitrogenCount++;
+                        updateNitrogenCounter();
+                        
+                        const treeName = currentPuzzleTree.name;
+                        closePuzzle();
+                        showDialog(`Great work! The ${treeName} tree is now healthy!`, () => {
+                            setTimeout(() => {
+                                checkLevelComplete();
+                            }, 500);
+                        });
+                    }
+                }, 1000);
+            } else {
+                showDialog(`Not quite right. You need all rows and columns to sum to ${target}. Keep trying!`);
+            }
+        }
+        
+        function closePuzzle() {
+            document.getElementById('puzzle-container').style.display = 'none';
+            currentPuzzleTree = null;
+        }
+        
+        function updateNitrogenCounter() {
+            document.getElementById('nitrogen-value').textContent = nitrogenCount;
+        }
+        
+        function checkLevelComplete() {
+            console.log('Checking level completion...');
+            console.log('Trees status:', trees.map(t => ({ name: t.name, healthy: t.healthy })));
+            console.log('Nitrogen count:', nitrogenCount);
+            
+            const allTreesHealthy = trees.every(tree => tree && tree.healthy === true);
+            
+            if (allTreesHealthy && nitrogenCount >= 4) {
+                console.log('Level completed!');
+                gameCompleted = true;
+                
+                // Play yay sound
+                const yaySound = document.getElementById('yay-sound');
+                if (yaySound) {
+                    yaySound.currentTime = 0;
+                    yaySound.play().catch(() => {});
+                }
+                
+                // Show level complete modal after a short delay
+                setTimeout(() => {
+                    const modal = document.getElementById('level-complete-modal');
+                    if (modal) {
+                        modal.style.display = 'flex';
+                    } else {
+                        console.error('Level complete modal not found');
+                        // Fallback - show dialog
+                        showDialog("🎉 Congratulations! You've completed the Nitrogen Orchard Adventure! All trees are now healthy!", () => {
+                            window.location.href = "index5.html";
+                        });
+                    }
+                }, 1000);
+            } else {
+                console.log('Level not complete yet. All trees healthy:', allTreesHealthy, 'Nitrogen count:', nitrogenCount);
+            }
+        }
+        
+        function toggleJournal() {
+            const journal = document.getElementById('journal');
+            journal.style.display = journal.style.display === 'flex' ? 'none' : 'flex';
+        }
+        
+        function closeJournal() {
+            document.getElementById('journal').style.display = 'none';
+        }
+        
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            if (e.key === ' ') {
+                e.preventDefault();
+                checkTreeInteraction();
+            }
+            
+            if (e.key === 'j' || e.key === 'J') {
+                toggleJournal();
+            }
+        });
+        document.getElementById('continue-btn').addEventListener('click', function() {
+    window.location.href = 'index5.html';
+});
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        document.getElementById('journal-toggle').addEventListener('click', toggleJournal);
+        
+        // Continue button click handler - Fixed to go to index5.html
+        document.getElementById('continue-btn').addEventListener('click', function() {
+            // Play click sound
+            const clickSound = document.getElementById('click-sound');
+            clickSound.currentTime = 0;
+            clickSound.play().catch(() => {});
+            
+            // Show completion message and redirect
+            showDialog("Congratulations! You've completed the nitrogen quest and mastered the art of nutrient balancing!", () => {
+                // Redirect to index5.html after dialog is closed
+                window.location.href = "index5.html";
+            });
+        });
+        
+        // Game loop
+        function gameLoop() {
+            movePlayer();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Initialize game
+        generateDecorations();
+        renderBackground();
+        updateNitrogenCounter();
+        gameLoop();
+        
+        // Show initial dialog
+        setTimeout(() => {
+            showDialog("Welcome, brave alchemist! The magical orchard needs your help. Use SPACE to interact with trees and restore their nitrogen balance!");
+        }, 500);
+        
+        // Audio functionality
+        const clickSound = document.getElementById('click-sound');
+        const startSound = document.getElementById('start-sound');
+        const bgMusic = document.getElementById('bg-music');
+        const yaySound = document.getElementById('yay-sound');
+
+        // Initialize audio on first user interaction
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.addEventListener('click', () => {
+                bgMusic.play().catch(() => {});
+            }, { once: true });
+
+            // Add click sound to buttons and interactive elements
+            const soundClickTargets = document.querySelectorAll('button, #journal-toggle, .fertilizer-cell, #journal, .close-button');
+            soundClickTargets.forEach(el => {
+                el.addEventListener('click', () => {
+                    clickSound.currentTime = 0;
+                    clickSound.play().catch(() => {});
+                });
+            });
+        });
+        const muteButton = document.getElementById('mute-button');
+
+    // Audio state management
+    let isMuted = false;
+
+    // Load mute preference
+    function loadMutePreference() {
+        const savedMute = localStorage.getItem('audioMuted');
+        if (savedMute === 'true') {
+            isMuted = true;
+            muteAllAudio();
+            muteButton.textContent = '🔇';
+            muteButton.classList.add('muted');
+        }
+    }
+
+    // Save mute preference
+    function saveMutePreference() {
+        localStorage.setItem('audioMuted', isMuted);
+    }
+
+    // Mute all audio
+    function muteAllAudio() {
+        // Add all your audio elements here
+        clickSound.muted = true;
+        startSound.muted = true;
+        bgMusic.muted = true;
+        // Add any other audio elements you have
+    }
+
+    // Unmute all audio
+    function unmuteAllAudio() {
+        // Add all your audio elements here
+        clickSound.muted = false;
+        startSound.muted = false;
+        bgMusic.muted = false;
+        // Add any other audio elements you have
+    }
+
+    // Toggle mute
+    function toggleMute() {
+        isMuted = !isMuted;
+        if (isMuted) {
+            muteAllAudio();
+            muteButton.textContent = '🔇';
+            muteButton.classList.add('muted');
+        } else {
+            unmuteAllAudio();
+            muteButton.textContent = '🔊';
+            muteButton.classList.remove('muted');
+            // Try to play background music if unmuting
+            if (bgMusic) bgMusic.play().catch(() => {});
+        }
+        saveMutePreference();
+    }
+
+    // Mute button event listener
+    muteButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleMute();
+    });
+
+    // Call this on page load (inside DOMContentLoaded or at the start)
+    loadMutePreference();
+
+    // Update your existing click sound code to check if muted:
+    // Replace: clickSound.play();
+    // With: if (!isMuted) { clickSound.play(); }
+         document.getElementById('back-home-button').addEventListener('click', function() {
+    window.location.href = 'index.html';
+});
+        document.getElementById('exit-game-button').addEventListener('click', function() {
+    window.location.href = 'end.html';
+});
+    </script>
+</body>
+</html>

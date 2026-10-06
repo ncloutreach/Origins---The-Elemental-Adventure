@@ -1,0 +1,1 @@
+Students learn about elements in the context of their natural sources and uses rather than through rote memorization. Combines science, puzzles, storytelling, and problem-solving to enrich understanding.

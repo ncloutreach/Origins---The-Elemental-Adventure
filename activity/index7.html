@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Level 7: Salt Flats - Sodium and Chlorine</title>
+    <style>
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    border: 4px solid #333;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 50%, #F5DEB3 100%);
+}
+#mute-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 20;
+    border: 2px solid #4caf50;
+    font-size: 1.5rem;
+    transition: background-color 0.3s;
+}
+
+#mute-button:hover {
+    background-color: rgba(76, 175, 80, 0.3);
+}
+
+#mute-button.muted {
+    border-color: #f44336;
+}
+#game-screen {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.screen-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+#intro-screen {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+#intro-text {
+    width: 80%;
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.pixel-button {
+    background-color: #444;
+    border: 2px solid #777;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0px #222;
+}
+
+.pixel-button:hover {
+    background-color: #555;
+}
+
+.pixel-button:active {
+    box-shadow: 1px 1px 0px #222;
+    transform: translate(2px, 2px);
+}
+
+/* Salt Flats Ground */
+.salt-flats {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(to bottom, #F5F5DC 0%, #FFFACD 50%, #F0E68C 100%);
+}
+
+.salt-flats::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(255,255,255,0.3) 50px, rgba(255,255,255,0.3) 51px),
+        repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(255,255,255,0.3) 50px, rgba(255,255,255,0.3) 51px);
+}
+/* Crystal Container - moved up */
+.crystal-container {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    left: 50%;
+    top: 25%;  /* Changed from 35% to 25% */
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+}
+
+/* Element boxes - moved up */
+.elements-container {
+    position: absolute;
+    bottom: 280px;  /* Changed from 220px to 280px */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 40px;
+    z-index: 5;
+}
+
+.salt-crystal {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #FFD700, #FFED4E, #FFF8DC);
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.4s ease;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    border: 3px solid #FFB347;
+}
+
+.salt-crystal:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+}
+
+.crystal-text {
+    font-size: 52px;
+    font-weight: bold;
+    color: #2c2c72;
+    text-shadow: 2px 2px 0 #fff;
+}
+
+.salt-fragments {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.fragment {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background-color: #FFD700;
+    border: 1px solid #FFA500;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+
+.element {
+    width: 90px;
+    height: 90px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+    font-weight: bold;
+    opacity: 0.4;
+    transition: all 0.4s ease;
+    cursor: pointer;
+    border: 4px solid;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+.element.active {
+    opacity: 1;
+    pointer-events: auto;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.sodium {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    border-color: #ff4757;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.chlorine {
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    border-color: #00d2d3;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Drop Zone */
+.puzzle-area {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border: 3px solid #777;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 5;
+}
+
+.formula-display {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #FFD700;
+}
+
+.element-dropzone {
+    width: 100%;
+    height: 80px;
+    border: 3px dashed #888;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 15px 0;
+    font-size: 16px;
+    color: #888;
+    background-color: rgba(0, 0, 0, 0.3);
+    transition: all 0.3s;
+}
+
+.element-dropzone.active {
+    border-color: #FFD700;
+    background-color: rgba(255, 215, 0, 0.2);
+}
+
+.check-button {
+    background-color: #444;
+    border: 2px solid #777;
+    color: white;
+    padding: 10px 30px;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0px #222;
+    margin-top: 10px;
+}
+
+.check-button:hover {
+    background-color: #555;
+}
+
+.check-button:active {
+    box-shadow: 1px 1px 0px #222;
+    transform: translate(2px, 2px);
+}
+
+#hint-area {
+    margin-top: 10px;
+    font-style: italic;
+    color: #FFD700;
+    min-height: 20px;
+}
+
+/* Journal */
+#journal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background-color: #aa8866;
+    border: 2px solid #886644;
+    cursor: pointer;
+    z-index: 6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+#journal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 400px;
+    background-color: #ddccaa;
+    border: 4px solid #886644;
+    padding: 20px;
+    color: #442200;
+    z-index: 20;
+    display: none;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+}
+
+#close-journal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+/* Success Screen */
+#success-screen {
+    background-color: rgba(0, 0, 0, 0.9);
+    display: none;
+}
+
+.success-content h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #FFD700;
+}
+
+.success-content p {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+/* Instructions Box */
+.instructions-box {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border: 2px solid #777;
+    border-radius: 10px;
+    max-width: 300px;
+    z-index: 6;
+}
+
+.instructions-box h3 {
+    margin-top: 0;
+    color: #FFD700;
+}
+
+.instructions-box ol {
+    margin: 10px 0 0 20px;
+    padding: 0;
+}
+
+.instructions-box li {
+    margin-bottom: 5px;
+}
+
+/* Back buttons */
+#back-home-button, #exit-game-button {
+    position: absolute;
+    bottom: 20px;
+    z-index: 50;
+    background-color: #444;
+    border: 2px solid #777;
+    color: white;
+    padding: 8px 16px;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+}
+
+#back-home-button {
+    left: 20px;
+}
+
+#exit-game-button {
+    right: 20px;
+}
+
+#back-home-button:hover, #exit-game-button:hover {
+    background-color: #555;
+}
+
+/* Mobile adjustments */
+@media screen and (max-width: 800px) {
+    .instructions-box {
+        font-size: 12px;
+        max-width: 200px;
+        padding: 10px;
+    }
+    
+    .puzzle-area {
+        width: 90%;
+        padding: 15px;
+    }
+    
+    .crystal-container {
+        width: 180px;
+        height: 180px;
+    }
+    
+    .salt-crystal {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .elements-container {
+        gap: 20px;
+    }
+    
+    .element {
+        width: 70px;
+        height: 70px;
+        font-size: 24px;
+    }
+}
+/* Better mobile responsiveness */
+@media screen and (max-width: 480px) {
+    #intro-text {
+        font-size: 14px;
+    }
+    
+    .instructions-box {
+        font-size: 11px;
+        max-width: 150px;
+        padding: 8px;
+    }
+    
+    .instructions-box h3 {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    .instructions-box li {
+        margin-bottom: 3px;
+    }
+    
+    .puzzle-area {
+        width: 95%;
+        padding: 10px;
+        bottom: 10px;
+    }
+    
+    .formula-display {
+        font-size: 18px;
+    }
+    
+    .element-dropzone {
+        height: 60px;
+        font-size: 14px;
+    }
+    
+    .check-button {
+        padding: 8px 20px;
+        font-size: 14px;
+    }
+    
+    #hint-area {
+        font-size: 12px;
+    }
+    
+    .crystal-container {
+        width: 150px;
+        height: 150px;
+        top: 20%;
+    }
+    
+    .salt-crystal {
+        width: 130px;
+        height: 130px;
+    }
+    
+    .crystal-text {
+        font-size: 36px;
+    }
+    
+    .elements-container {
+        bottom: 240px;
+        gap: 15px;
+    }
+    
+    .element {
+        width: 60px;
+        height: 60px;
+        font-size: 20px;
+    }
+    
+    #journal {
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
+    }
+    
+    #journal-content {
+        width: 90%;
+        height: 70%;
+        padding: 15px;
+        font-size: 14px;
+    }
+    
+    #back-home-button, #exit-game-button {
+        padding: 6px 12px;
+        font-size: 12px;
+        bottom: 10px;
+    }
+    
+    #back-home-button {
+        left: 10px;
+    }
+    
+    #exit-game-button {
+        right: 10px;
+    }
+}
+
+/* Tablet adjustments */
+@media screen and (min-width: 481px) and (max-width: 800px) {
+    .puzzle-area {
+        width: 85%;
+    }
+    
+    .crystal-container {
+        top: 22%;
+    }
+    
+    .elements-container {
+        bottom: 260px;
+    }
+    
+    #journal-content {
+        width: 80%;
+        height: 60%;
+    }
+}
+</style>
+</head>
+<body>
+    <body>
+    <audio id="click-sound" src="sounds/click.mp3" preload="auto"></audio>
+    <audio id="start-sound" src="sounds/start.mp3" preload="auto"></audio>
+    <audio id="bg-music" src="sounds/background.mp3" preload="auto" loop></audio>
+    <audio id="yay-sound" src="sounds/yay.mp3" preload="auto"></audio>
+    
+    <div id="game-container">
+        <div id="game-screen">
+            <!-- Instructions Box -->
+            <div class="instructions-box">
+                <h3>How to Play:</h3>
+                <ol>
+                    <li>Click the salt crystal to break it</li>
+                    <li>Drag Na and Cl to the drop zone</li>
+                    <li>Click Check Solution</li>
+                    <li>Double-click drop zone to reset</li>
+                </ol>
+            </div>
+            
+            <!-- Journal -->
+            <div id="journal">J</div>
+            
+            <div id="journal-content">
+                <div id="close-journal">×</div>
+                <h2>Alchemist's Journal - Salt Flats</h2>
+                <p><i>Where earth meets sky in endless white,<br>
+                Two elements bond, invisible might.</i></p>
+                <p>Salt (NaCl) is composed of sodium (Na) and chlorine (Cl). When separated, these elements are highly reactive.</p>
+                <p>Sodium is a soft, silvery metal that reacts violently with water. Chlorine is a toxic greenish-yellow gas.</p>
+                <p>Together, they form common table salt - essential for life and completely safe to consume.</p>
+                <hr>
+                <p><b>Hint:</b> Click the crystal to break it, then drag both elements to the drop zone to form NaCl.</p>
+            </div>
+            
+            <!-- Salt Flats Background -->
+            <div class="salt-flats"></div>
+            <div id="mute-button">🔊</div>
+            <!-- Crystal Container -->
+            <div class="crystal-container">
+                <div class="salt-crystal" id="saltCrystal">
+                    <span class="crystal-text">NaCl</span>
+                </div>
+                <div class="salt-fragments" id="saltFragments"></div>
+            </div>
+            
+            <!-- Elements -->
+            <div class="elements-container">
+                <div class="element sodium" id="sodium" draggable="true">Na</div>
+                <div class="element chlorine" id="chlorine" draggable="true">Cl</div>
+            </div>
+            
+            <!-- Puzzle Area -->
+            <div class="puzzle-area">
+                <div class="formula-display" id="formulaDisplay">? + ? → NaCl</div>
+                <div class="element-dropzone" id="dropZone">Drop elements here</div>
+                <button class="check-button" id="checkBtn">Check Solution</button>
+                <div id="hint-area"></div>
+            </div>
+            
+            <!-- Back buttons -->
+            <button id="back-home-button">Back to Journal</button>
+            <button id="exit-game-button">Exit Game</button>
+        </div>
+        
+        <!-- Intro Screen -->
+        <div id="intro-screen" class="screen-overlay">
+            <h1>Element Quest: Salt Flats</h1>
+            <div id="intro-text">
+                <p>You've arrived at the vast salt flats, where you'll discover sodium and chlorine.</p>
+                <p>These two reactive elements combine to form the salt we use every day.</p>
+                <p><b>Your mission:</b> Break apart the salt crystal and recombine its elements.</p>
+            </div>
+            <button class="pixel-button" id="start-game">Begin Quest</button>
+        </div>
+        
+        <!-- Success Screen -->
+        <div id="success-screen" class="screen-overlay">
+            <div class="success-content">
+                <h1>Level Complete!</h1>
+                <p>You've successfully separated and recombined sodium and chlorine!</p>
+                <p>These reactive elements form the salt essential for life.</p>
+                <button class="pixel-button" id="next-level-btn">Go to Next Level</button>
+            </div>
+        </div>
+    </div>
+</body>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const introScreen = document.getElementById('intro-screen');
+    const startGameBtn = document.getElementById('start-game');
+    const journal = document.getElementById('journal');
+    const journalContent = document.getElementById('journal-content');
+    const closeJournal = document.getElementById('close-journal');
+    const saltCrystal = document.getElementById('saltCrystal');
+    const saltFragments = document.getElementById('saltFragments');
+    const sodiumElement = document.getElementById('sodium');
+    const chlorineElement = document.getElementById('chlorine');
+    const dropZone = document.getElementById('dropZone');
+    const checkBtn = document.getElementById('checkBtn');
+    const formulaDisplay = document.getElementById('formulaDisplay');
+    const successScreen = document.getElementById('success-screen');
+    const nextLevelBtn = document.getElementById('next-level-btn');
+    const hintArea = document.getElementById('hint-area');
+    
+    let gameStarted = false;
+    let isCrystalBroken = false;
+    let droppedElements = [];
+    
+    // Touch drag state
+    let draggedElement = null;
+    let touchOffsetX = 0;
+    let touchOffsetY = 0;
+    
+    // Make elements initially inactive
+    sodiumElement.style.pointerEvents = 'none';
+    chlorineElement.style.pointerEvents = 'none';
+    
+    // Start game function
+    function startGame() {
+        introScreen.style.display = 'none';
+        gameStarted = true;
+        hintArea.textContent = 'Click on the salt crystal to break it and reveal its elements.';
+    }
+    
+    // Start game button
+    startGameBtn.addEventListener('click', startGame);
+    startGameBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        startGame();
+    }, { passive: false });
+    
+    // Journal functionality
+    journal.addEventListener('click', function() {
+        journalContent.style.display = 'block';
+    });
+    
+    journal.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        journalContent.style.display = 'block';
+    }, { passive: false });
+    
+    closeJournal.addEventListener('click', function() {
+        journalContent.style.display = 'none';
+    });
+    
+    closeJournal.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        journalContent.style.display = 'none';
+    }, { passive: false });
+    
+    // Check solution
+    checkBtn.addEventListener('click', checkSolution);
+    checkBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        checkSolution();
+    }, { passive: false });
+    
+    function checkSolution() {
+        if (!isCrystalBroken) {
+            hintArea.textContent = 'You need to break the crystal first!';
+            return;
+        }
+        
+        if (droppedElements.length < 2) {
+            hintArea.textContent = 'You need to add both sodium and chlorine to form salt.';
+            return;
+        }
+        
+        const hasNa = droppedElements.includes('Na');
+        const hasCl = droppedElements.includes('Cl');
+        
+        if (hasNa && hasCl) {
+            successScreen.style.display = 'flex';
+            hintArea.textContent = 'Correct! Sodium and chlorine combine to form sodium chloride (NaCl).';
+        } else {
+            hintArea.textContent = 'That\'s not quite right. You need both sodium (Na) and chlorine (Cl).';
+        }
+    }
+    
+    // Next level button
+    nextLevelBtn.addEventListener('click', function() {
+        window.location.href = "index8.html";
+    });
+    
+    nextLevelBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        window.location.href = "index8.html";
+    }, { passive: false });
+    
+    // Add pixelated crystal break effect
+    function createPixelatedFragments() {
+        saltFragments.innerHTML = '';
+        for (let y = 0; y < 6; y++) {
+            for (let x = 0; x < 6; x++) {
+                const fragment = document.createElement('div');
+                fragment.className = 'fragment';
+                const baseX = 50 + (x - 3) * 20;
+                const baseY = 50 + (y - 3) * 20;
+                fragment.style.left = `${baseX + 25}px`;
+                fragment.style.top = `${baseY + 25}px`;
+                
+                if ((x + y) % 3 === 0) {
+                    fragment.style.backgroundColor = '#77ffff';
+                    fragment.style.border = '1px solid #aaffff';
+                } else if ((x + y) % 3 === 1) {
+                    fragment.style.backgroundColor = '#ffaa00';
+                    fragment.style.border = '1px solid #ffcc00';
+                } else {
+                    fragment.style.backgroundColor = '#00ff66';
+                    fragment.style.border = '1px solid #00ffaa';
+                }
+                
+                saltFragments.appendChild(fragment);
+            }
+        }
+    }
+    
+    // Crystal breaking animation
+    function breakCrystal() {
+        createPixelatedFragments();
+        saltCrystal.style.opacity = '0';
+        saltCrystal.style.transform = 'scale(0.8)';
+        
+        setTimeout(() => {
+            const fragments = document.querySelectorAll('.fragment');
+            fragments.forEach((fragment, index) => {
+                const angle = (index / fragments.length) * Math.PI * 2;
+                const distance = 50 + Math.random() * 150;
+                const xPos = Math.cos(angle) * distance;
+                const yPos = Math.sin(angle) * distance;
+                fragment.style.transform = `translate(${xPos}px, ${yPos}px) rotate(${Math.random() * 360}deg)`;
+                fragment.style.opacity = '0';
+            });
+        }, 100);
+    }
+    
+    saltCrystal.addEventListener('click', function() {
+        if (!isCrystalBroken) {
+            breakCrystal();
+            setTimeout(() => {
+                sodiumElement.classList.add('active');
+                chlorineElement.classList.add('active');
+                sodiumElement.style.pointerEvents = 'auto';
+                chlorineElement.style.pointerEvents = 'auto';
+                hintArea.textContent = 'The crystal has broken! Now you can drag the elements to the drop zone.';
+            }, 1500);
+            isCrystalBroken = true;
+        }
+    });
+    
+    saltCrystal.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        if (!isCrystalBroken) {
+            breakCrystal();
+            setTimeout(() => {
+                sodiumElement.classList.add('active');
+                chlorineElement.classList.add('active');
+                sodiumElement.style.pointerEvents = 'auto';
+                chlorineElement.style.pointerEvents = 'auto';
+                hintArea.textContent = 'The crystal has broken! Now you can drag the elements to the drop zone.';
+            }, 1500);
+            isCrystalBroken = true;
+        }
+    }, { passive: false });
+    
+    // Desktop drag and drop
+    sodiumElement.addEventListener('dragstart', dragStart);
+    chlorineElement.addEventListener('dragstart', dragStart);
+    dropZone.addEventListener('dragover', dragOver);
+    dropZone.addEventListener('dragleave', dragLeave);
+    dropZone.addEventListener('drop', drop);
+    
+    function dragStart(e) {
+        e.dataTransfer.setData('text/plain', e.target.id);
+        this.style.opacity = '0.7';
+    }
+    
+    function dragOver(e) {
+        e.preventDefault();
+        this.classList.add('active');
+    }
+    
+    function dragLeave(e) {
+        this.classList.remove('active');
+    }
+    
+    function drop(e) {
+        e.preventDefault();
+        this.classList.remove('active');
+        
+        const id = e.dataTransfer.getData('text/plain');
+        const element = document.getElementById(id);
+        element.style.opacity = '1';
+        
+        if (id === 'sodium' && !droppedElements.includes('Na')) {
+            droppedElements.push('Na');
+            hintArea.textContent = 'Sodium (Na) added. Sodium is a highly reactive alkali metal.';
+        } else if (id === 'chlorine' && !droppedElements.includes('Cl')) {
+            droppedElements.push('Cl');
+            hintArea.textContent = 'Chlorine (Cl) added. Chlorine is a greenish-yellow gas at room temperature.';
+        }
+        
+        updateFormulaDisplay();
+    }
+    
+    // Touch drag and drop for mobile
+    function setupTouchDrag(element) {
+        let isDragging = false;
+        let startX, startY;
+        let currentX, currentY;
+        let originalX, originalY;
+        
+        element.addEventListener('touchstart', function(e) {
+            if (!isCrystalBroken) return;
+            
+            e.preventDefault();
+            isDragging = true;
+            draggedElement = element;
+            
+            const touch = e.touches[0];
+            const rect = element.getBoundingClientRect();
+            
+            startX = touch.clientX;
+            startY = touch.clientY;
+            originalX = rect.left;
+            originalY = rect.top;
+            
+            element.style.opacity = '0.7';
+            element.style.position = 'fixed';
+            element.style.zIndex = '1000';
+            element.style.left = rect.left + 'px';
+            element.style.top = rect.top + 'px';
+        }, { passive: false });
+        
+        element.addEventListener('touchmove', function(e) {
+            if (!isDragging) return;
+            
+            e.preventDefault();
+            const touch = e.touches[0];
+            
+            currentX = touch.clientX - startX;
+            currentY = touch.clientY - startY;
+            
+            element.style.left = (originalX + currentX) + 'px';
+            element.style.top = (originalY + currentY) + 'px';
+            
+            // Check if over drop zone
+            const dropRect = dropZone.getBoundingClientRect();
+            if (touch.clientX >= dropRect.left && touch.clientX <= dropRect.right &&
+                touch.clientY >= dropRect.top && touch.clientY <= dropRect.bottom) {
+                dropZone.classList.add('active');
+            } else {
+                dropZone.classList.remove('active');
+            }
+        }, { passive: false });
+        
+        element.addEventListener('touchend', function(e) {
+            if (!isDragging) return;
+            
+            e.preventDefault();
+            isDragging = false;
+            
+            const touch = e.changedTouches[0];
+            const dropRect = dropZone.getBoundingClientRect();
+            
+            // Check if dropped on drop zone
+            if (touch.clientX >= dropRect.left && touch.clientX <= dropRect.right &&
+                touch.clientY >= dropRect.top && touch.clientY <= dropRect.bottom) {
+                
+                if (element.id === 'sodium' && !droppedElements.includes('Na')) {
+                    droppedElements.push('Na');
+                    hintArea.textContent = 'Sodium (Na) added. Sodium is a highly reactive alkali metal.';
+                } else if (element.id === 'chlorine' && !droppedElements.includes('Cl')) {
+                    droppedElements.push('Cl');
+                    hintArea.textContent = 'Chlorine (Cl) added. Chlorine is a greenish-yellow gas at room temperature.';
+                }
+                
+                updateFormulaDisplay();
+            }
+            
+            // Reset element position
+            element.style.opacity = '1';
+            element.style.position = 'static';
+            element.style.zIndex = 'auto';
+            dropZone.classList.remove('active');
+            draggedElement = null;
+        }, { passive: false });
+    }
+    
+    setupTouchDrag(sodiumElement);
+    setupTouchDrag(chlorineElement);
+    
+    function updateFormulaDisplay() {
+        let formula = droppedElements.join(' + ');
+        if (droppedElements.length === 0) {
+            formula = '? + ?';
+        } else if (droppedElements.length === 1) {
+            formula += ' + ?';
+        }
+        formulaDisplay.textContent = `${formula} → NaCl`;
+        
+        if (droppedElements.length === 0) {
+            dropZone.textContent = 'Drop elements here';
+        } else if (droppedElements.length === 1) {
+            dropZone.textContent = `${droppedElements[0]} added, one more needed`;
+        } else {
+            dropZone.textContent = `${droppedElements.join(' + ')} added`;
+        }
+    }
+    
+    // Reset functionality
+    dropZone.addEventListener('dblclick', resetDropZone);
+    
+    // Touch double-tap for reset
+    let lastTap = 0;
+    dropZone.addEventListener('touchend', function(e) {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        if (tapLength < 500 && tapLength > 0) {
+            e.preventDefault();
+            resetDropZone();
+        }
+        lastTap = currentTime;
+    });
+    
+    function resetDropZone() {
+        droppedElements = [];
+        updateFormulaDisplay();
+        hintArea.textContent = 'Formula reset. Try placing the elements again.';
+    }
+    
+    // Audio functionality
+    const clickSound = document.getElementById('click-sound');
+    const startSound = document.getElementById('start-sound');
+    const bgMusic = document.getElementById('bg-music');
+    const yaySound = document.getElementById('yay-sound');
+
+    bgMusic.volume = 0.3;
+    bgMusic.play().catch(() => {});
+
+    const soundClickTargets = document.querySelectorAll('button, .salt-crystal, .element, #dropZone');
+    soundClickTargets.forEach(el => {
+        el.addEventListener('click', () => {
+            clickSound.currentTime = 0;
+            clickSound.play().catch(() => {});
+        });
+        el.addEventListener('touchstart', () => {
+            clickSound.currentTime = 0;
+            clickSound.play().catch(() => {});
+        });
+    });
+
+    // Add yay sound when level is complete
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                if (successScreen.style.display === 'flex') {
+                    yaySound.currentTime = 0;
+                    yaySound.play().catch(() => {});
+                }
+            }
+        });
+    });
+    observer.observe(successScreen, { attributes: true });
+    const muteButton = document.getElementById('mute-button');
+
+    // Audio state management
+    let isMuted = false;
+
+    // Load mute preference
+    function loadMutePreference() {
+        const savedMute = localStorage.getItem('audioMuted');
+        if (savedMute === 'true') {
+            isMuted = true;
+            muteAllAudio();
+            muteButton.textContent = '🔇';
+            muteButton.classList.add('muted');
+        }
+    }
+
+    // Save mute preference
+    function saveMutePreference() {
+        localStorage.setItem('audioMuted', isMuted);
+    }
+
+    // Mute all audio
+    function muteAllAudio() {
+        // Add all your audio elements here
+        clickSound.muted = true;
+        startSound.muted = true;
+        bgMusic.muted = true;
+        // Add any other audio elements you have
+    }
+
+    // Unmute all audio
+    function unmuteAllAudio() {
+        // Add all your audio elements here
+        clickSound.muted = false;
+        startSound.muted = false;
+        bgMusic.muted = false;
+        // Add any other audio elements you have
+    }
+
+    // Toggle mute
+    function toggleMute() {
+        isMuted = !isMuted;
+        if (isMuted) {
+            muteAllAudio();
+            muteButton.textContent = '🔇';
+            muteButton.classList.add('muted');
+        } else {
+            unmuteAllAudio();
+            muteButton.textContent = '🔊';
+            muteButton.classList.remove('muted');
+            // Try to play background music if unmuting
+            if (bgMusic) bgMusic.play().catch(() => {});
+        }
+        saveMutePreference();
+    }
+
+    // Mute button event listener
+    muteButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleMute();
+    });
+
+    // Call this on page load (inside DOMContentLoaded or at the start)
+    loadMutePreference();
+
+    // Update your existing click sound code to check if muted:
+    // Replace: clickSound.play();
+    // With: if (!isMuted) { clickSound.play(); }
+        // Navigation buttons
+    document.getElementById('back-home-button').addEventListener('click', function() {
+        window.location.href = 'index.html';
+    });
+    
+    document.getElementById('exit-game-button').addEventListener('click', function() {
+        window.location.href = 'end.html';
+    });
+});
+    </script>
+</body>
+</html>

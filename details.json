@@ -1,0 +1,60 @@
+{
+
+    "details": [
+        {
+            "Activity": "Origins-The Elemental Adventure",     
+            "Theme": "Discovery of 8 Natural Elements",               
+            "Discipline": "Chemistry",
+            "Age_Group": "V to XII",
+            "Language": "English",			 
+            "Technology": "MP4 and HTML File",
+            "Type_of_content": "Game",
+            "ISLEVL": "No",
+            "Institute": "CSIR National Chemical Laboratory, Pune",
+            "InstituteAcronym": "CSIR-NCL"
+            }
+    ],
+
+    "principalinvestigator": [
+        {       
+            "PrincipalInvestigator": "Dr. Wafia Masih",              
+            "Institute": "CSIR National Chemical Laboratory, Pune",               
+            "InstituteAcronym": "CSIR-NCL" 
+        },
+        {       
+            "PrincipalInvestigator": "",              
+            "Institute": "",               
+            "InstituteAcronym": "" 
+        }
+        
+    ],
+
+    "contributor": [
+        {       
+            "Contributor": "Dr. Jayaram B",              
+            "Institute": "Vellore Institute of Technology, Chennai",         
+            "InstituteAcronym": "VIT"        
+        },
+        {
+            "Contributor": "Priyanshi Mishra",              
+            "Institute": "Vellore Institute of Technology, Chennai",         
+            "InstituteAcronym": "VIT"   
+        },
+        {
+            "Contributor": "Niyathi Vedagiri",              
+            "Institute": "Vellore Institute of Technology, Chennai",         
+            "InstituteAcronym": "VIT"   
+        },
+        {
+            "Contributor": "Anna Sunny George",              
+            "Institute": "Vellore Institute of Technology, Chennai",         
+            "InstituteAcronym": "VIT"   
+        },
+        {
+            "Contributor": "Swananda Gupta",              
+            "Institute": "Vellore Institute of Technology, Chennai",         
+            "InstituteAcronym": "VIT"   
+        }
+   
+   ]
+}

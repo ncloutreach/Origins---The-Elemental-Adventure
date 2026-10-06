@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silicon City - Level 8</title>
+    <style>
+       body {
+    background-color: #000;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+#gameContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+    box-sizing: border-box;
+}
+#mute-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 20;
+    border: 2px solid #4caf50;
+    font-size: 1.5rem;
+    transition: background-color 0.3s;
+}
+
+#mute-button:hover {
+    background-color: rgba(76, 175, 80, 0.3);
+}
+
+#mute-button.muted {
+    border-color: #f44336;
+}
+#gameCanvas {
+    border: 4px solid #444;
+    background-color: #222;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    width: 100%;
+    max-width: 640px;
+    height: auto;
+    aspect-ratio: 4/3; /* Maintain 4:3 aspect ratio */
+}
+
+#inventory {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 640px;
+    padding: 10px;
+    background-color: #333;
+    border: 4px solid #444;
+    margin-top: 10px;
+    box-sizing: border-box;
+}
+
+.resource {
+    display: flex;
+    align-items: center;
+    margin: 5px;
+}
+
+.resource-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    image-rendering: pixelated;
+}
+
+#journal {
+    position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 300px;
+            background-color: #d6c8ab;
+            border: 5px solid #8B4513;
+            padding: 20px;
+            color: #333;
+            font-family: 'Courier New', monospace;
+            display: none;
+            z-index: 100;
+            overflow-y: auto;
+}
+
+#controls {
+    margin-top: 10px;
+    width: 100%;
+    max-width: 640px;
+    text-align: center;
+    background-color: #333;
+    border: 4px solid #444;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #555;
+    color: #fff;
+    border: 2px solid #777;
+    padding: 5px 10px;
+    margin: 5px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+}
+
+button:hover {
+    background-color: #666;
+}
+
+#message {
+    height: auto;
+    min-height: 20px;
+    margin-top: 10px;
+    color: #ff9;
+    text-align: center;
+    padding: 0 5px;
+}
+
+/* Media queries for different screen sizes */
+@media (max-width: 680px) {
+    #gameCanvas {
+        border-width: 2px;
+    }
+    
+    #inventory, #controls {
+        border-width: 2px;
+    }
+    
+    button {
+        padding: 8px;
+        margin: 3px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    #gameContainer {
+        padding: 5px;
+    }
+    
+    .resource {
+        font-size: 14px;
+    }
+    
+    button {
+        padding: 6px;
+        font-size: 12px;
+    }
+    
+    #journal {
+        top: 10px;
+        left: 10px;
+        padding: 10px;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 320px) {
+    .resource-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+    }
+    
+    button {
+        padding: 4px;
+        margin: 2px;
+        font-size: 11px;
+    }
+}button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+#back-home-button {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        z-index: 50;
+        }
+        #exit-game-button {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 50;
+}
+    </style>
+</head>
+<body>
+     <div id="back-home-button">
+        <button id="return-to-menu">Back to Journal</button>
+    </div>
+    <button id="exit-game-button">Exit Game</button>
+    <audio id="click-sound" src="sounds/click.mp3" preload="auto"></audio>
+    <audio id="start-sound" src="sounds/start.mp3" preload="auto"></audio>
+    <audio id="bg-music" src="sounds/background.mp3" preload="auto" loop></audio>
+    <audio id="yay-sound" src="sounds/yay.mp3" preload="auto"></audio>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="320" height="240"></canvas>
+        <div id="inventory">
+            <div class="resource">
+                <div class="resource-icon" style="background-color: #e6c288;"></div>
+                <span>Sand: <span id="sandCount">0</span></span>
+            </div>
+            <div class="resource">
+                <div class="resource-icon" style="background-color: #a6d7e8;"></div>
+                <span>Glass: <span id="glassCount">0</span></span>
+            </div>
+            <div class="resource">
+                <div class="resource-icon" style="background-color: #8893b0;"></div>
+                <span>Silicon: <span id="siliconCount">0</span></span>
+            </div>
+        </div>
+        <div id="controls">
+            <div>
+                <button id="moveLeft">← Move Left</button>
+                <button id="moveRight">Move Right →</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <button id="collectSand">Collect Sand</button>
+                <button id="processGlass">Process Glass</button>
+                <button id="refineSilicon">Refine Silicon</button>
+                <button id="showJournal">Journal</button>
+            </div>
+        </div>
+        <div id="message"></div>
+    </div>
+    <div id="mute-button">🔊</div>
+    <div id="journal">
+        <h3>Journal Entries</h3>
+        <div style="background:#fffbe6;border:2px solid #ffe066;padding:10px 15px;margin-bottom:10px;border-radius:8px;color:#333;font-size:1.05em;">
+  <b>How to Play:</b>
+  <ol style="margin:10px 0 0 20px;padding:0;">
+    <li>Use the arrow keys or the on-screen buttons to move left and right.</li>
+    <li>Collect sand, process it into glass, and refine glass into silicon.</li>
+    <li>Watch your inventory to track your resources.</li>
+    <li>Complete the silicon cycle to finish the level.</li>
+    <li>Open the journal for story and hints.</li>
+  </ol>
+</div>
+        <p>"The silicon cycle continues in this modern jungle. Look for the sands beneath your feet and the glass above your head."</p>
+        <p>"Modern technology is built on the transformation of simple sand. The ancient alchemists would be amazed."</p>
+        <p>"Silicon flows through the city's veins - from the beach to the buildings to the devices in everyone's hands."</p>
+        <button id="closeJournal">Close</button>
+    </div>
+
+    <script>
+       // Game state
+const game = {
+    canvas: document.getElementById('gameCanvas'),
+    ctx: null,
+    playerX: 160,
+    playerY: 190,
+    playerWidth: 16,
+    playerHeight: 24,
+    playerSpeed: 3,
+    playerDirection: 1,
+    inventory: {
+        sand: 0,
+        glass: 0,
+        silicon: 0
+    },
+    locations: [
+        { type: 'sand', x: 50, y: 200, width: 60, height: 20, color: '#e6c288' },
+        { type: 'glass', x: 160, y: 180, width: 30, height: 40, color: '#a6d7e8' },
+        { type: 'silicon', x: 260, y: 200, width: 40, height: 20, color: '#8893b0' }
+    ],
+    buildings: [
+        { x: 20, y: 100, width: 60, height: 100, color: '#555' },
+        { x: 100, y: 120, width: 40, height: 80, color: '#666' },
+        { x: 160, y: 80, width: 50, height: 120, color: '#777' },
+        { x: 230, y: 110, width: 70, height: 90, color: '#666' }
+    ],
+    moving: {
+        left: false,
+        right: false
+    },
+    message: '',
+    messageTimer: null,
+    endGameThreshold: 3,
+    gameCompleted: false,
+    journalComplete: false
+};
+
+// Initialize the game
+function init() {
+    game.ctx = game.canvas.getContext('2d');
+    
+    // Input handlers
+    document.getElementById('moveLeft').addEventListener('mousedown', () => game.moving.left = true);
+    document.getElementById('moveLeft').addEventListener('mouseup', () => game.moving.left = false);
+    document.getElementById('moveLeft').addEventListener('mouseleave', () => game.moving.left = false);
+    
+    document.getElementById('moveRight').addEventListener('mousedown', () => game.moving.right = true);
+    document.getElementById('moveRight').addEventListener('mouseup', () => game.moving.right = false);
+    document.getElementById('moveRight').addEventListener('mouseleave', () => game.moving.right = false);
+    
+    document.getElementById('collectSand').addEventListener('click', collectResource);
+    document.getElementById('processGlass').addEventListener('click', processGlass);
+    document.getElementById('refineSilicon').addEventListener('click', refineSilicon);
+    document.getElementById('showJournal').addEventListener('click', toggleJournal);
+    document.getElementById('closeJournal').addEventListener('click', toggleJournal);
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') game.moving.left = true;
+        if (e.key === 'ArrowRight') game.moving.right = true;
+        if (e.key === 'e') collectResource();
+        if (e.key === 'j') toggleJournal();
+    });
+
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowLeft') game.moving.left = false;
+        if (e.key === 'ArrowRight') game.moving.right = false;
+    });
+
+    // Touch support
+    setupTouchControls();
+
+    // Start the game loop
+    gameLoop();
+}
+
+// Main game loop
+function gameLoop() {
+    update();
+    render();
+    requestAnimationFrame(gameLoop);
+}
+
+// Update game state
+function update() {
+    if (game.moving.left) {
+        game.playerX -= game.playerSpeed;
+        game.playerDirection = -1;
+    }
+    if (game.moving.right) {
+        game.playerX += game.playerSpeed;
+        game.playerDirection = 1;
+    }
+
+    // Keep player within bounds
+    if (game.playerX < 0) game.playerX = 0;
+    if (game.playerX > game.canvas.width - game.playerWidth) {
+        game.playerX = game.canvas.width - game.playerWidth;
+    }
+
+    // Update UI
+    document.getElementById('sandCount').textContent = game.inventory.sand;
+    document.getElementById('glassCount').textContent = game.inventory.glass;
+    document.getElementById('siliconCount').textContent = game.inventory.silicon;
+}
+
+// Render the game
+function render() {
+    // Clear canvas
+    game.ctx.fillStyle = '#222';
+    game.ctx.fillRect(0, 0, game.canvas.width, game.canvas.height);
+
+    // Draw sky
+    game.ctx.fillStyle = '#4488aa';
+    game.ctx.fillRect(0, 0, game.canvas.width, 120);
+
+    // Draw sun
+    game.ctx.fillStyle = '#ffdd44';
+    game.ctx.beginPath();
+    game.ctx.arc(40, 40, 20, 0, Math.PI * 2);
+    game.ctx.fill();
+
+    // Draw buildings
+    for (const building of game.buildings) {
+        game.ctx.fillStyle = building.color;
+        game.ctx.fillRect(building.x, building.y, building.width, building.height);
+
+        // Windows
+        game.ctx.fillStyle = '#a6d7e8';
+        for (let i = 0; i < building.width - 10; i += 15) {
+            for (let j = 0; j < building.height - 10; j += 20) {
+                game.ctx.fillRect(building.x + 5 + i, building.y + 10 + j, 10, 10);
+            }
+        }
+    }
+
+    // Draw ground
+    game.ctx.fillStyle = '#555';
+    game.ctx.fillRect(0, 220, game.canvas.width, 20);
+
+    // Draw resource locations
+    for (const location of game.locations) {
+        game.ctx.fillStyle = location.color;
+        game.ctx.fillRect(location.x, location.y, location.width, location.height);
+    }
+
+    // Draw player
+    game.ctx.fillStyle = '#ff9944';
+    game.ctx.fillRect(game.playerX, game.playerY, game.playerWidth, game.playerHeight);
+    
+    // Draw player face
+    game.ctx.fillStyle = '#000';
+    if (game.playerDirection === 1) {
+        game.ctx.fillRect(game.playerX + 12, game.playerY + 6, 3, 3);
+    } else {
+        game.ctx.fillRect(game.playerX + 1, game.playerY + 6, 3, 3);
+    }
+}
+
+// Collect resources
+function collectResource() {
+    for (const location of game.locations) {
+        if (game.playerX + game.playerWidth > location.x && 
+            game.playerX < location.x + location.width) {
+            
+            switch (location.type) {
+                case 'sand':
+                    if (game.inventory.sand < 20) {
+                        game.inventory.sand += 1;
+                        showMessage("Collected sand!");
+                    } else {
+                        showMessage("Sand storage full!");
+                    }
+                    break;
+                default:
+                    showMessage("Nothing to collect here!");
+            }
+            return;
+        }
+    }
+    showMessage("Nothing nearby to collect!");
+}
+
+// Process sand into glass
+function processGlass() {
+    if (game.inventory.sand >= 3) {
+        game.inventory.sand -= 3;
+        game.inventory.glass += 2;
+        showMessage("Processed 3 sand into 2 glass!");
+    } else {
+        showMessage("Need 3 sand to make glass!");
+    }
+}
+
+// Refine glass into silicon
+function refineSilicon() {
+    if (game.inventory.glass >= 3) {
+        game.inventory.glass -= 3;
+        game.inventory.silicon += 1;
+        showMessage("Refined 3 glass into 1 silicon!");
+        
+        // Check for game completion
+        if (game.inventory.silicon >= game.endGameThreshold && !game.gameCompleted) {
+            game.gameCompleted = true;
+            setTimeout(showGameCompleteDialog, 1000);
+        }
+    } else {
+        showMessage("Need 3 glass to make silicon!");
+    }
+}
+
+// Toggle journal
+function toggleJournal() {
+    const journal = document.getElementById('journal');
+    journal.style.display = journal.style.display === 'none' || !journal.style.display ? 'block' : 'none';
+}
+
+// Show message
+function showMessage(msg) {
+    document.getElementById('message').textContent = msg;
+    clearTimeout(game.messageTimer);
+    game.messageTimer = setTimeout(() => {
+        document.getElementById('message').textContent = '';
+    }, 3000);
+}
+
+// Show game complete dialog
+function showGameCompleteDialog() {
+    const overlay = document.createElement('div');
+    overlay.id = 'completionOverlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.zIndex = '200';
+    
+    const message = document.createElement('div');
+    message.style.color = '#ff9944';
+    message.style.fontFamily = "'Courier New', monospace";
+    message.style.fontSize = '32px';
+    message.style.fontWeight = 'bold';
+    message.style.textAlign = 'center';
+    message.style.marginBottom = '30px';
+    message.style.padding = '20px';
+    message.textContent = 'LEVEL COMPLETE!';
+    
+    const subMessage = document.createElement('div');
+    subMessage.style.color = '#fff';
+    subMessage.style.fontFamily = "'Courier New', monospace";
+    subMessage.style.fontSize = '18px';
+    subMessage.style.textAlign = 'center';
+    subMessage.style.marginBottom = '30px';
+    subMessage.textContent = 'You have mastered the silicon cycle!';
+    
+    const stats = document.createElement('div');
+    stats.style.color = '#fff';
+    stats.style.fontFamily = "'Courier New', monospace";
+    stats.style.fontSize = '16px';
+    stats.style.marginBottom = '30px';
+    stats.style.backgroundColor = '#333';
+    stats.style.padding = '20px';
+    stats.style.borderRadius = '10px';
+    stats.style.border = '2px solid #777';
+    stats.innerHTML = `
+        <p style="margin: 5px 0;"><b>FINAL INVENTORY:</b></p>
+        <p style="margin: 5px 0;">Sand: ${game.inventory.sand}</p>
+        <p style="margin: 5px 0;">Glass: ${game.inventory.glass}</p>
+        <p style="margin: 5px 0;">Silicon: ${game.inventory.silicon}</p>
+    `;
+    
+    const nextLevelButton = document.createElement('button');
+    nextLevelButton.textContent = 'Continue to Next Level';
+    nextLevelButton.style.padding = '15px 30px';
+    nextLevelButton.style.fontSize = '18px';
+    nextLevelButton.style.backgroundColor = '#4488aa';
+    nextLevelButton.style.color = '#fff';
+    nextLevelButton.style.border = '3px solid #a6d7e8';
+    nextLevelButton.style.cursor = 'pointer';
+    nextLevelButton.style.fontFamily = "'Courier New', monospace";
+    nextLevelButton.style.borderRadius = '5px';
+    
+    const handleClick = function() {
+        const yaySound = document.getElementById('yay-sound');
+        yaySound.currentTime = 0;
+        yaySound.play().catch(() => {});
+        setTimeout(() => {
+            window.location.href = "final.html";
+        }, 500);
+    };
+    
+    nextLevelButton.addEventListener('click', handleClick);
+    nextLevelButton.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        handleClick();
+    }, { passive: false });
+    
+    overlay.appendChild(message);
+    overlay.appendChild(subMessage);
+    overlay.appendChild(stats);
+    overlay.appendChild(nextLevelButton);
+    
+    document.body.appendChild(overlay);
+    
+    showMessage("Game complete! You've mastered silicon processing.");
+}
+
+// Setup touch controls
+function setupTouchControls() {
+    document.getElementById('moveLeft').addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        game.moving.left = true;
+    }, { passive: false });
+
+    document.getElementById('moveLeft').addEventListener('touchend', function(e) {
+        e.preventDefault();
+        game.moving.left = false;
+    }, { passive: false });
+
+    document.getElementById('moveRight').addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        game.moving.right = true;
+    }, { passive: false });
+
+    document.getElementById('moveRight').addEventListener('touchend', function(e) {
+        e.preventDefault();
+        game.moving.right = false;
+    }, { passive: false });
+
+    document.getElementById('collectSand').addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        collectResource();
+    }, { passive: false });
+
+    document.getElementById('processGlass').addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        processGlass();
+    }, { passive: false });
+
+    document.getElementById('refineSilicon').addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        refineSilicon();
+    }, { passive: false });
+}
+
+// Audio functionality
+const clickSound = document.getElementById('click-sound');
+const startSound = document.getElementById('start-sound');
+const bgMusic = document.getElementById('bg-music');
+const yaySound = document.getElementById('yay-sound');
+
+// Start game on load
+window.addEventListener('load', function() {
+    init();
+    
+    bgMusic.volume = 0.3;
+    bgMusic.play().catch(() => {});
+
+    const soundClickTargets = document.querySelectorAll('button');
+    soundClickTargets.forEach(el => {
+        el.addEventListener('click', () => {
+            clickSound.currentTime = 0;
+            clickSound.play().catch(() => {});
+        });
+    });
+});
+const muteButton = document.getElementById('mute-button');
+
+// Audio state management
+let isMuted = false;
+
+// Load mute preference
+function loadMutePreference() {
+    const savedMute = localStorage.getItem('audioMuted');
+    if (savedMute === 'true') {
+        isMuted = true;
+        muteAllAudio();
+        muteButton.textContent = '🔇';
+        muteButton.classList.add('muted');
+    }
+}
+
+// Save mute preference
+function saveMutePreference() {
+    localStorage.setItem('audioMuted', isMuted);
+}
+
+// Mute all audio
+function muteAllAudio() {
+    // Add all your audio elements here
+    clickSound.muted = true;
+    startSound.muted = true;
+    bgMusic.muted = true;
+    // Add any other audio elements you have
+}
+
+// Unmute all audio
+function unmuteAllAudio() {
+    // Add all your audio elements here
+    clickSound.muted = false;
+    startSound.muted = false;
+    bgMusic.muted = false;
+    // Add any other audio elements you have
+}
+
+// Toggle mute
+function toggleMute() {
+    isMuted = !isMuted;
+    if (isMuted) {
+        muteAllAudio();
+        muteButton.textContent = '🔇';
+        muteButton.classList.add('muted');
+    } else {
+        unmuteAllAudio();
+        muteButton.textContent = '🔊';
+        muteButton.classList.remove('muted');
+        // Try to play background music if unmuting
+        if (bgMusic) bgMusic.play().catch(() => {});
+    }
+    saveMutePreference();
+}
+
+// Mute button event listener
+muteButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleMute();
+});
+
+// Call this on page load (inside DOMContentLoaded or at the start)
+loadMutePreference();
+
+// Update your existing click sound code to check if muted:
+// Replace: clickSound.play();
+// With: if (!isMuted) { clickSound.play(); }
+// Navigation buttons
+document.getElementById('return-to-menu').addEventListener('click', function() {
+    window.location.href = 'index.html';
+});
+
+document.getElementById('exit-game-button').addEventListener('click', function() {
+    window.location.href = 'end.html';
+});
+    
+    </script>
+</body>
+</html>

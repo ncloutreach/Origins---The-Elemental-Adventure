@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Element Quest: Electric Workshop (Copper)</title>
+    <style>
+        /* (Your CSS kept as-is, minor reformatting) */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: 800px;
+    height: 600px;
+    border: 4px solid #333;
+    overflow: hidden;
+    transform-origin: center center;
+}
+#mute-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 20;
+    border: 2px solid #4caf50;
+    font-size: 1.5rem;
+    transition: background-color 0.3s;
+}
+
+#mute-button:hover {
+    background-color: rgba(76, 175, 80, 0.3);
+}
+
+#mute-button.muted {
+    border-color: #f44336;
+}
+/* Responsive scaling - keep original size, just scale down */
+@media screen and (max-width: 820px) {
+    #game-container {
+        transform: scale(calc(100vw / 820));
+    }
+}
+
+@media screen and (max-height: 620px) {
+    #game-container {
+        transform: scale(calc(100vh / 620));
+    }
+}
+
+/* When both width and height are constrained, use the smaller scale */
+@media screen and (max-width: 820px) and (max-height: 620px) {
+    #game-container {
+        transform: scale(calc(min(100vw / 820, 100vh / 620)));
+    }
+}
+
+/* Mobile optimizations */
+@media screen and (max-width: 600px) {
+    #journal-content {
+        font-size: 12px;
+        padding: 12px;
+    }
+    
+    #dialog-box {
+        font-size: 12px;
+        padding: 10px;
+    }
+}
+        
+        #game-screen {
+            width: 100%;
+            height: 100%;
+            background-color: #222;
+            position: relative;
+        }
+        
+        #intro-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        
+        #intro-text {
+            width: 80%;
+            font-size: 18px;
+            line-height: 1;
+            margin-bottom: 20px;
+        }
+        
+        .pixel-button {
+            background-color: #444;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            border: 2px solid #777;
+            box-shadow: 3px 3px 0px #222;
+        }
+        
+        .pixel-button:hover {
+            background-color: #555;
+        }
+        
+        .pixel-button:active {
+            box-shadow: 1px 1px 0px #222;
+            transform: translate(2px, 2px);
+        }
+        
+        #player {
+            width: 32px;
+            height: 48px;
+            position: absolute;
+            background-color: #5d9fff;
+            bottom: 80px;
+            left: 100px;
+            z-index: 5;
+        }
+        
+        .workshop {
+            width: 100%;
+            height: 100%;
+            background-color: #333;
+            position: relative;
+        }
+        
+        .floor {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background-color: #444;
+            background-image: repeating-linear-gradient(90deg, #444, #444 30px, #555 30px, #555 60px);
+        }
+        
+        .wall {
+            position: absolute;
+            background-color: #333;
+            border: 2px solid #444;
+        }
+        
+        .machine {
+            position: absolute;
+            background-color: #555;
+            border: 3px solid #666;
+            box-sizing: border-box;
+        }
+        
+        .circuit-component {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #777;
+            border: 2px solid #888;
+            box-sizing: border-box;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        .wire {
+            position: absolute;
+            background-color: #222;
+            z-index: 1;
+        }
+        
+        .wire.powered {
+            background-color: #e67e22;
+            box-shadow: 0 0 5px #f39c12;
+        }
+        
+        .circuit-node {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: #555;
+            border: 2px solid #777;
+            border-radius: 50%;
+            box-sizing: border-box;
+            cursor: pointer;
+            z-index: 3;
+        }
+        
+        .circuit-node.powered {
+            background-color: #f1c40f;
+            box-shadow: 0 0 10px #f39c12;
+        }
+        
+        .circuit-node.active {
+            border-color: #3498db;
+            box-shadow: 0 0 5px #3498db;
+        }
+        
+        .switch {
+            position: absolute;
+            width: 30px;
+            height: 15px;
+            background-color: #333;
+            border: 2px solid #555;
+            cursor: pointer;
+            z-index: 3;
+        }
+        
+        .switch-lever {
+            position: absolute;
+            width: 10px;
+            height: 20px;
+            background-color: #777;
+            top: -5px;
+            left: 2px;
+            transition: left 0.2s;
+        }
+        
+        .switch.on .switch-lever {
+            left: 18px;
+            background-color: #f1c40f;
+        }
+        
+        .light {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background-color: #555;
+            border-radius: 50%;
+            border: 2px solid #666;
+            box-sizing: border-box;
+        }
+        
+        .light.on {
+            background-color: #f1c40f;
+            box-shadow: 0 0 15px #f39c12;
+        }
+        
+        .battery {
+            position: absolute;
+            width: 40px;
+            height: 20px;
+            background-color: #3d3d3d;
+            border: 2px solid #444;
+            box-sizing: border-box;
+        }
+        
+        .battery:after {
+            content: "";
+            position: absolute;
+            width: 4px;
+            height: 10px;
+            background-color: #555;
+            right: -6px;
+            top: 5px;
+        }
+        
+        #journal {
+            position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 60px; /* Increased width to fit the word "Journal" */
+    height: 40px;
+    background-color: #aa8866;
+    border: 2px solid #886644;
+    cursor: pointer;
+    z-index: 6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 14px; /* Adjusted font size to better fit */
+    color: #fff; /* Optional: white text for contrast */
+    border-radius: 6px; /* Optional: rounded corners */
+    text-align: center;
+    padding: 0 5px; /* Some padding to prevent text from touching edges */
+    box-sizing: border-box;
+        }
+        
+        #journal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 400px;
+            background-color: #ddccaa;
+            border: 4px solid #886644;
+            padding: 20px;
+            color: #442200;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+        }
+        
+        #close-journal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        
+        #dialog-box {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 700px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px;
+            border: 2px solid #aaa;
+            display: none;
+            z-index: 7;
+        }
+        
+        #inventory {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            z-index: 6;
+        }
+        
+        .inventory-slot {
+            width: 40px;
+            height: 40px;
+            background-color: #333;
+            border: 2px solid #555;
+            margin-right: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            color: #fff;
+        }
+        
+        #success-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 15;
+        }
+        
+        .copper-element {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #e67e22;
+            text-shadow: 0 0 10px #d35400;
+        }
+        
+        .table {
+            position: absolute;
+            background-color: #8B4513;
+            border-top: 4px solid #A0522D;
+        }
+        
+        .workbench {
+            position: absolute;
+            background-color: #8B4513;
+            border: 3px solid #A0522D;
+        }
+        
+        .toolbox {
+            position: absolute;
+            background-color: #c0392b;
+            border: 2px solid #e74c3c;
+        }
+        
+        .workstation {
+            position: absolute;
+            background-color: #7f8c8d;
+            border: 2px solid #95a5a6;
+        }button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+#back-home-button {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        z-index: 50;
+        }
+        #exit-game-button {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 50;
+}
+    </style>
+</head>
+<body>
+     <div id="back-home-button">
+        <button id="return-to-menu">Back to Journal</button>
+    </div>
+    <button id="exit-game-button">Exit Game</button>
+
+    <!-- Audio elements -->
+    <audio id="click-sound" src="sounds/click.mp3" preload="auto"></audio>
+    <audio id="start-sound" src="sounds/start.mp3" preload="auto"></audio>
+    <audio id="bg-music" src="sounds/background.mp3" preload="auto" loop></audio>
+    <audio id="yay-sound" src="sounds/yay.mp3" preload="auto"></audio>
+
+    <div id="game-container">
+        <div id="game-screen">
+            <div class="workshop">
+                <!-- Workshop environment -->
+                <div class="wall" style="left: 0; top: 0; width: 800px; height: 30px;"></div>
+                <div class="wall" style="left: 0; top: 30px; width: 30px; height: 570px;"></div>
+                <div class="wall" style="right: 0; top: 30px; width: 30px; height: 570px;"></div>
+                
+                <!-- Workbenches and tables -->
+                <div class="workbench" style="left: 100px; top: 100px; width: 200px; height: 80px;"></div>
+                <div class="workbench" style="right: 100px; top: 100px; width: 200px; height: 80px;"></div>
+                <div class="table" style="left: 350px; top: 340px; width: 100px; height: 60px;"></div>
+                
+                <!-- Toolboxes -->
+                <div class="toolbox" style="left: 120px; top: 70px; width: 40px; height: 30px;"></div>
+                <div class="toolbox" style="right: 140px; top: 70px; width: 50px; height: 30px;"></div>
+                
+                <!-- Machines -->
+                <div class="machine" style="left: 50px; top: 240px; width: 80px; height: 120px;"></div>
+                <div class="machine" style="right: 50px; top: 240px; width: 80px; height: 120px;"></div>
+                <div class="workstation" style="left: 200px; top: 240px; width: 120px; height: 100px;"></div>
+                <div class="workstation" style="right: 200px; top: 240px; width: 120px; height: 100px;"></div>
+                
+                <!-- Circuit Components -->
+                <div class="battery" id="battery" style="left: 130px; top: 120px;"></div>
+                
+                <!-- Circuit nodes -->
+                <div class="circuit-node" id="node1" data-sequence="1" style="left: 190px; top: 130px;"></div>
+                <div class="circuit-node" id="node2" data-sequence="2" style="left: 250px; top: 180px;"></div>
+                <div class="circuit-node" id="node3" data-sequence="3" style="left: 320px; top: 230px;"></div>
+                <div class="circuit-node" id="node4" data-sequence="4" style="left: 390px; top: 280px;"></div>
+                <div class="circuit-node" id="node5" data-sequence="5" style="left: 460px; top: 230px;"></div>
+                <div class="circuit-node" id="node6" data-sequence="6" style="left: 530px; top: 180px;"></div>
+                <div class="circuit-node" id="node7" data-sequence="7" style="left: 600px; top: 130px;"></div>
+                
+                <!-- Wires -->
+                <div class="wire" id="wire1" style="left: 170px; top: 130px; width: 20px; height: 3px;"></div>
+                <div class="wire" id="wire2" style="left: 190px; top: 130px; width: 3px; height: 50px;"></div>
+                <div class="wire" id="wire3" style="left: 190px; top: 180px; width: 60px; height: 3px;"></div>
+                <div class="wire" id="wire4" style="left: 250px; top: 180px; width: 3px; height: 50px;"></div>
+                <div class="wire" id="wire5" style="left: 250px; top: 230px; width: 70px; height: 3px;"></div>
+                <div class="wire" id="wire6" style="left: 320px; top: 230px; width: 3px; height: 50px;"></div>
+                <div class="wire" id="wire7" style="left: 320px; top: 280px; width: 70px; height: 3px;"></div>
+                <div class="wire" id="wire8" style="left: 390px; top: 230px; width: 3px; height: 50px;"></div>
+                <div class="wire" id="wire9" style="left: 390px; top: 230px; width: 70px; height: 3px;"></div>
+                <div class="wire" id="wire10" style="left: 460px; top: 180px; width: 3px; height: 50px;"></div>
+                <div class="wire" id="wire11" style="left: 460px; top: 180px; width: 70px; height: 3px;"></div>
+                <div class="wire" id="wire12" style="left: 530px; top: 130px; width: 3px; height: 50px;"></div>
+                <div class="wire" id="wire13" style="left: 530px; top: 130px; width: 70px; height: 3px;"></div>
+                
+                <!-- Lights -->
+                <div class="light" id="light1" style="left: 70px; top: 200px;"></div>
+                <div class="light" id="light2" style="left: 220px; top: 200px;"></div>
+                <div class="light" id="light3" style="left: 370px; top: 200px;"></div>
+                <div class="light" id="light4" style="left: 520px; top: 200px;"></div>
+                <div class="light" id="light5" style="left: 670px; top: 200px;"></div>
+                
+                <!-- Switches -->
+                <div class="switch" id="switch1" style="left: 80px; top: 370px;">
+                    <div class="switch-lever"></div>
+                </div>
+                <div class="switch" id="switch2" style="left: 230px; top: 370px;">
+                    <div class="switch-lever"></div>
+                </div>
+                <div class="switch" id="switch3" style="left: 380px; top: 370px;">
+                    <div class="switch-lever"></div>
+                </div>
+                <div class="switch" id="switch4" style="left: 530px; top: 370px;">
+                    <div class="switch-lever"></div>
+                </div>
+                <div class="switch" id="switch5" style="left: 680px; top: 370px;">
+                    <div class="switch-lever"></div>
+                </div>
+                
+                <div class="floor"></div>
+            </div>
+            
+            <div id="player"></div>
+            <div id="mute-button">🔊</div>
+            <div id="journal">Journal</div>
+            
+            <div id="journal-content">
+                <div id="close-journal">×</div>
+                <h2>Alchemist's Journal - Page 6</h2>
+                <p><i>An element that carries power through time and space,<br>
+                Found in the heart of invention, in every busy place.</i></p>
+                <p>The sixth element in our quest is copper, the carrier of electricity and enabler of modern invention.</p>
+                <p>To harness its power, one must understand the flow of energy. Connect the circuits in the proper sequence, following the path of least resistance.</p>
+                <p>Only when all lights in the workshop glow with life will the copper reveal itself to the worthy seeker.</p>
+                <hr>
+                <p><b>Hint:</b> The nodes must be activated in sequence from 1 to 7. Click them in the correct order to create a complete circuit. The numbers determine the proper sequence.</p>
+            </div>
+            
+            <div id="dialog-box"></div>
+            
+            <div id="inventory">
+                <div class="inventory-slot" id="copper-slot">Cu</div>
+            </div>
+        </div>
+        
+        <div id="intro-screen">
+            <h1>Element Quest: Electric Workshop</h1>
+            <div id="intro-text">
+                <p>As Samir, you've entered a busy workshop in search of copper, the sixth element mentioned in the alchemist's journal.</p>
+                <p>According to the journal, copper is "an element that carries power" and essential to electric circuits.</p>
+                <p><b>Instructions:</b></p>
+                <p>1. Click on the circuit nodes in the correct sequence (1-7) to complete the circuit</p>
+                <p>2. The sequence must be followed perfectly to light up all the workshop lights</p>
+                <p>3. When all lights are powered, you'll unlock copper</p>
+                <p>4. Use the 'J' button in the top right to consult the journal at any time</p>
+            </div>
+            <button class="pixel-button" id="start-game">Begin Quest</button>
+        </div>
+
+        <div id="success-screen">
+            <div class="copper-element">Cu</div>
+            <h1>Element Discovered: Copper!</h1>
+            <p>You have successfully completed the electrical circuit and collected copper.</p>
+            <p>The element has been added to your inventory!</p>
+            <button class="pixel-button" id="continue-btn">Go to next level</button>
+        </div>
+    </div>
+
+    <script>
+        // Single unified script and DOMContentLoaded handler
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const gameScreen = document.getElementById('game-screen');
+            const introScreen = document.getElementById('intro-screen');
+            const startGameBtn = document.getElementById('start-game');
+            const player = document.getElementById('player');
+            const journal = document.getElementById('journal');
+            const journalContent = document.getElementById('journal-content');
+            const closeJournal = document.getElementById('close-journal');
+            const dialogBox = document.getElementById('dialog-box');
+            const successScreen = document.getElementById('success-screen');
+            const continueBtn = document.getElementById('continue-btn');
+            const copperSlot = document.getElementById('copper-slot');
+            const nodes = document.querySelectorAll('.circuit-node');
+            const wires = document.querySelectorAll('.wire');
+            const lights = document.querySelectorAll('.light');
+            const switches = document.querySelectorAll('.switch');
+            const clickSound = document.getElementById('click-sound');
+            const startSound = document.getElementById('start-sound');
+            const bgMusic = document.getElementById('bg-music');
+            const yaySound = document.getElementById('yay-sound');
+            const muteButton = document.getElementById('mute-button');
+
+            // State
+            let gameStarted = false;
+            let copperCollected = false;
+            let currentSequence = 0;
+            let clickedNodes = [];
+            let allSwitchesOn = false;
+            let isMuted = false;
+
+            // Helper: play sound only if not muted and element exists
+            function playSound(soundEl) {
+                if (!isMuted && soundEl) {
+                    try {
+                        soundEl.currentTime = 0;
+                        soundEl.play().catch(()=>{});
+                    } catch (e) {}
+                }
+            }
+
+            // Load mute preference
+            function loadMutePreference() {
+                const saved = localStorage.getItem('audioMuted');
+                if (saved === 'true') {
+                    isMuted = true;
+                    muteButton.textContent = '🔇';
+                    muteButton.classList.add('muted');
+                    setAllMuted(true);
+                } else {
+                    isMuted = false;
+                }
+            }
+
+            // Save mute preference
+            function saveMutePreference() {
+                localStorage.setItem('audioMuted', isMuted ? 'true' : 'false');
+            }
+
+            // Mute/unmute all known audio elements
+            function setAllMuted(muted) {
+                const audioEls = [clickSound, startSound, bgMusic, yaySound];
+                audioEls.forEach(a => { if (a) a.muted = muted; });
+            }
+
+            // Toggle mute
+            function toggleMute() {
+                isMuted = !isMuted;
+                setAllMuted(isMuted);
+                if (isMuted) {
+                    muteButton.textContent = '🔇';
+                    muteButton.classList.add('muted');
+                } else {
+                    muteButton.textContent = '🔊';
+                    muteButton.classList.remove('muted');
+                    // try to resume background music
+                    if (bgMusic) {
+                        bgMusic.play().catch(()=>{});
+                    }
+                }
+                saveMutePreference();
+            }
+
+            // Initialize mute from localStorage
+            loadMutePreference();
+
+            // Start the game
+            startGameBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                introScreen.style.display = 'none';
+                gameStarted = true;
+                showDialog("I've arrived at the electric workshop. The journal mentioned copper as 'an element that carries power'.");
+                playSound(startSound);
+                if (!isMuted && bgMusic) {
+                    bgMusic.volume = 0.3;
+                    bgMusic.play().catch(()=>{});
+                }
+            });
+
+            // Add click sound to many interactive elements (guarded by playSound)
+            const soundClickTargets = document.querySelectorAll('button, .circuit-node, .switch, #journal, #close-journal');
+            soundClickTargets.forEach(el => {
+                el.addEventListener('click', () => {
+                    playSound(clickSound);
+                });
+            });
+
+            // Node click handlers
+            nodes.forEach(node => {
+                node.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (!gameStarted) return;
+
+                    const sequence = parseInt(this.dataset.sequence);
+
+                    if (sequence === currentSequence + 1) {
+                        currentSequence = sequence;
+                        this.classList.add('active', 'powered');
+                        clickedNodes.push(this);
+                        updateWires();
+
+                        if (currentSequence === 7) {
+                            showDialog("Circuit connected! Now I need to turn on all the switches to power the lights.");
+                            playSound(yaySound);
+                        } else {
+                            showDialog(`Node ${sequence} connected. Let me find the next one in the sequence.`);
+                        }
+                    } else {
+                        showDialog("That's not the right sequence. I need to follow the path carefully.");
+                        resetCircuit();
+                    }
+                });
+            });
+
+            // Switch click handlers
+            switches.forEach((switchEl, index) => {
+                switchEl.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (!gameStarted || currentSequence < 7) return;
+
+                    this.classList.toggle('on');
+                    updateLights();
+                    checkAllSwitches();
+                });
+            });
+
+            // wire powering logic
+            function updateWires() {
+                wires.forEach(w => w.classList.remove('powered'));
+
+                // power wires according to the sequence number
+                if (currentSequence >= 1) {
+                    document.getElementById('wire1')?.classList.add('powered');
+                }
+                if (currentSequence >= 2) {
+                    document.getElementById('wire2')?.classList.add('powered');
+                    document.getElementById('wire3')?.classList.add('powered');
+                }
+                if (currentSequence >= 3) {
+                    document.getElementById('wire4')?.classList.add('powered');
+                    document.getElementById('wire5')?.classList.add('powered');
+                }
+                if (currentSequence >= 4) {
+                    document.getElementById('wire6')?.classList.add('powered');
+                    document.getElementById('wire7')?.classList.add('powered');
+                }
+                if (currentSequence >= 5) {
+                    document.getElementById('wire8')?.classList.add('powered');
+                    document.getElementById('wire9')?.classList.add('powered');
+                }
+                if (currentSequence >= 6) {
+                    document.getElementById('wire10')?.classList.add('powered');
+                    document.getElementById('wire11')?.classList.add('powered');
+                }
+                if (currentSequence >= 7) {
+                    document.getElementById('wire12')?.classList.add('powered');
+                    document.getElementById('wire13')?.classList.add('powered');
+                }
+            }
+
+            // Update lights based on switches
+            function updateLights() {
+                switches.forEach((switchEl, index) => {
+                    const light = lights[index];
+                    if (currentSequence === 7 && switchEl.classList.contains('on')) {
+                        light.classList.add('on');
+                    } else {
+                        light.classList.remove('on');
+                    }
+                });
+            }
+
+            // Check all switches
+            function checkAllSwitches() {
+                let allOn = true;
+                switches.forEach(s => { if (!s.classList.contains('on')) allOn = false; });
+                if (allOn && currentSequence === 7 && !allSwitchesOn) {
+                    allSwitchesOn = true;
+                    showDialog("All lights are now powered! I can feel the copper element forming...");
+                    playSound(yaySound);
+                    setTimeout(completeLevel, 1200);
+                }
+            }
+
+            // Reset circuit
+            function resetCircuit() {
+                currentSequence = 0;
+                clickedNodes = [];
+                nodes.forEach(node => node.classList.remove('active', 'powered'));
+                wires.forEach(w => w.classList.remove('powered'));
+            }
+
+            // Complete level
+            function completeLevel() {
+                lights.forEach(light => light.style.boxShadow = '0 0 25px #f39c12');
+                successScreen.style.display = 'flex';
+                copperCollected = true;
+                copperSlot.style.backgroundColor = '#e67e22';
+                copperSlot.style.color = '#fff';
+                copperSlot.style.fontWeight = 'bold';
+            }
+
+            // Continue button
+            continueBtn?.addEventListener('click', function() {
+                // Redirect to next level (exists in your project)
+                window.location.href = "index7.html";
+            });
+
+            // Journal toggles
+            journal.addEventListener('click', function(e) {
+                e.stopPropagation();
+                journalContent.style.display = 'block';
+            });
+            closeJournal.addEventListener('click', function(e) {
+                e.stopPropagation();
+                journalContent.style.display = 'none';
+            });
+
+            // Dialog helper
+            let dialogTimer = null;
+            function showDialog(text) {
+                dialogBox.textContent = text;
+                dialogBox.style.display = 'block';
+                if (dialogTimer) clearTimeout(dialogTimer);
+                dialogTimer = setTimeout(() => {
+                    dialogBox.style.display = 'none';
+                }, 4000);
+            }
+
+            // Simple player movement
+            let playerX = 100;
+            const playerSpeed = 5;
+            let movingLeft = false;
+            let movingRight = false;
+
+            document.addEventListener('keydown', function(e) {
+                if (!gameStarted) {
+                    // allow opening journal with J even before starting
+                    if (e.key === 'j' || e.key === 'J') {
+                        journalContent.style.display = journalContent.style.display === 'block' ? 'none' : 'block';
+                    }
+                    return;
+                }
+                if (e.key === 'ArrowLeft') movingLeft = true;
+                if (e.key === 'ArrowRight') movingRight = true;
+                if (e.key === 'j' || e.key === 'J') {
+                    journalContent.style.display = journalContent.style.display === 'block' ? 'none' : 'block';
+                }
+            });
+            document.addEventListener('keyup', function(e) {
+                if (e.key === 'ArrowLeft') movingLeft = false;
+                if (e.key === 'ArrowRight') movingRight = false;
+            });
+
+            function gameLoop() {
+                if (gameStarted) {
+                    if (movingLeft) {
+                        playerX -= playerSpeed;
+                        if (playerX < 30) playerX = 30;
+                    }
+                    if (movingRight) {
+                        playerX += playerSpeed;
+                        const maxX = gameScreen.offsetWidth - player.offsetWidth - 30;
+                        if (playerX > maxX) playerX = maxX;
+                    }
+                    player.style.left = playerX + 'px';
+                }
+                requestAnimationFrame(gameLoop);
+            }
+            gameLoop();
+
+            // Mute button
+            muteButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMute();
+            });
+
+            // Back and exit listeners
+            const backHomeBtn = document.getElementById('back-home-button');
+            backHomeBtn?.addEventListener('click', function() {
+                // If you want the button to go back to some index, you can use the inner button instead:
+                window.location.href = 'index.html';
+            });
+
+            const exitBtn = document.getElementById('exit-game-button');
+            exitBtn?.addEventListener('click', function() {
+                window.location.href = 'end.html';
+            });
+
+            // When success-screen becomes visible, play yay sound (even if triggered elsewhere)
+            const successObserver = new MutationObserver((mutations) => {
+                mutations.forEach(m => {
+                    if (m.type === 'attributes' && m.attributeName === 'style') {
+                        if (successScreen.style.display === 'flex') {
+                            playSound(yaySound);
+                        }
+                    }
+                });
+            });
+            successObserver.observe(successScreen, { attributes: true });
+        });
+    </script>
+</body>
+</html>

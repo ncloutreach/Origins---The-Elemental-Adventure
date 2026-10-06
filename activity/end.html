@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game End Screen</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #1a1a1a;
+            position: relative;
+        }
+
+        .image-container {
+            width: 80vw;
+            height: 80vh;
+            background-image: url('sounds/WhatsApp\ Image\ 2025-09-11\ at\ 16.17.48_4416cd0.jpg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .button-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #endGameBtn {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        #endGameBtn:hover {
+            background-color: #c0392b;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        #playAgainBtn {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        #playAgainBtn:hover {
+            background-color: #27ae60;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="image-container"></div>
+    <div class="button-container">
+        <button id="endGameBtn">End Game</button>
+        <button id="playAgainBtn">Play Again</button>
+    </div>
+
+    <script>
+        document.getElementById('endGameBtn').addEventListener('click', function() {
+            alert('Game Ended!');
+            // Add your end game logic here
+        });
+
+        document.getElementById('playAgainBtn').addEventListener('click', function() {
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
