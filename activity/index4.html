@@ -901,7 +901,7 @@ body {
                         console.error('Level complete modal not found');
                         // Fallback - show dialog
                         showDialog("🎉 Congratulations! You've completed the Nitrogen Orchard Adventure! All trees are now healthy!", () => {
-                            window.location.href = "index5.html";
+                            window.location.href = "./index5.html";
                         });
                     }
                 }, 1000);
@@ -933,7 +933,7 @@ body {
             }
         });
         document.getElementById('continue-btn').addEventListener('click', function() {
-    window.location.href = 'index5.html';
+    window.location.href = './index5.html';
 });
         
         document.addEventListener('keyup', (e) => {
@@ -952,7 +952,7 @@ body {
             // Show completion message and redirect
             showDialog("Congratulations! You've completed the nitrogen quest and mastered the art of nutrient balancing!", () => {
                 // Redirect to index5.html after dialog is closed
-                window.location.href = "./activity/index5.html";
+                window.location.href = "./index5.html";
             });
         });
         
@@ -1064,10 +1064,10 @@ body {
     // Replace: clickSound.play();
     // With: if (!isMuted) { clickSound.play(); }
          document.getElementById('back-home-button').addEventListener('click', function() {
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
 });
         document.getElementById('exit-game-button').addEventListener('click', function() {
-    window.location.href = './activity/end.html';
+    window.location.href = './end.html';
 });
     </script>
 </body>
