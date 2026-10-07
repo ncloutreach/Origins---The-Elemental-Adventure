@@ -568,7 +568,7 @@ function showGameCompleteDialog() {
         yaySound.currentTime = 0;
         yaySound.play().catch(() => {});
         setTimeout(() => {
-            window.location.href = "final.html";
+            window.location.href = "./final.html";
         }, 500);
     };
     
@@ -717,11 +717,11 @@ loadMutePreference();
 // With: if (!isMuted) { clickSound.play(); }
 // Navigation buttons
 document.getElementById('return-to-menu').addEventListener('click', function() {
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
 });
 
 document.getElementById('exit-game-button').addEventListener('click', function() {
-    window.location.href = './activity/end.html';
+    window.location.href = './end.html';
 });
     
     </script>
